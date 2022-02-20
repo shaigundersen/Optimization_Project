@@ -1,8 +1,8 @@
-from pyomo.environ import *
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
-
+from math import pi
+from pyomo.environ import *
 
 def epsilone_method(model, f1_expr, f2_expr, solver, f_min, f_max):
     ########## epsilon ##########
@@ -38,8 +38,9 @@ def plot(**params):
     X_1, Y_1, F1_1, F2_1, title_1 = params['subplot1']
     X_2, Y_2, F1_2, F2_2, title_2 = params['subplot2']
 
-    fig, axs = plt.subplots(nrows=2, ncols=2, sharex=True, figsize=(20, 10))
+    fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(20, 10))
     ax1, ax2, ax3, ax4 = axs[0, 0], axs[0, 1], axs[1, 0], axs[1, 1]
+
     edge, = ax1.plot(X_1, Y_1, 'o', markersize=6, markerfacecolor='none', c='b')
     shaded = ax1.fill_between(X_1, Y_1, color='azure', alpha=0.85)
     ax1.legend([(edge, shaded)], ['Decision/coordinate space'], loc='best')
@@ -47,6 +48,7 @@ def plot(**params):
     ax1.set_ylabel('Y')
     ax1.grid(True)
     ax1.set_title(title_1)
+    ax1.set_ylim(bottom=min(Y_1)-0.1*min(Y_1))
 
     ax2.plot(F1_1, F2_1, 'o-', c='r', label='Pareto optimal front')
     ax2.legend(loc='best')
@@ -62,6 +64,7 @@ def plot(**params):
     ax3.set_ylabel('Y')
     ax3.grid(True)
     ax3.set_title(title_2)
+    ax3.set_ylim(bottom=min(Y_2)-0.1*min(Y_2))
 
     ax4.plot(F1_2, F2_2, 'o-', c='r', label='Pareto optimal front')
     ax4.legend(loc='best')
@@ -70,50 +73,7 @@ def plot(**params):
     ax4.grid(True)
     ax4.set_title(title_2)
 
-
-    # fig.tight_layout()
-    # plt.suptitle(title_1)
     plt.show()
-
-def knapsack():
-    solvername = 'baron'
-    solverpath_folder = 'C:\\baron'
-    solverpath_exe = 'C:\\baron\\baron.exe'
-    sys.path.append(solverpath_folder)
-
-    items = ['hammer', 'wrench', 'screwdriver']
-    v = {'hammer': 60, 'wrench': 100, 'screwdriver': 120}
-    intel = {'hammer': 100, 'wrench': 100, 'screwdriver': 1}
-    w = {'hammer': 10, 'wrench': 20, 'screwdriver': 30}
-    W_max = 50
-    model = ConcreteModel()
-    model.x = Var(items, domain=Binary)
-
-    model.f = Objective(expr=sum(v[i]*model.x[i] for i in items), sense=maximize)
-    model.f2 = Objective(expr=sum(intel[i]*model.x[i] for i in items), sense=maximize)
-    model.c = Constraint(expr=sum(w[i]*model.x[i] for i in items) <= W_max)
-    print(model.f)
-    model.f.activate()
-    model.f2.deactivate()
-    solver = SolverFactory(solvername, executable=solverpath_exe)
-    solver.solve(model)
-
-    print(f"f = {value(model.f)}")
-    print(f"f2 = {value(model.f2)}")
-    for i in items:
-        print(f"{i} = {value(model.x[i])}")
-
-    print("~~~~~~~~")
-    model.f.deactivate()
-    model.f2.activate()
-    solver = SolverFactory(solvername, executable=solverpath_exe)
-    solver.solve(model)
-    for i in model.component_objects():
-        print(i)
-    print(f"f = {value(model.f)}")
-    print(f"f2 = {value(model.f2)}")
-    for i in items:
-        print(f"{i} = {value(model.x[i])}")
 
 def weighted_sum(model, f1_expr, f2_expr, solver):
     ######## weight_sum ##########
@@ -183,33 +143,29 @@ def get_pareto_min_max_values(model, f1_expr, f2_expr, solver):
     return f2_min, f2_max
 
 if __name__ == '__main__':
-
+    if len(sys.argv) != 3:
+        quit("please provide solvername & solverpath_exe as sys arguments")
+    if not sys.argv[2].endswith('.exe'):
+        quit("please provide path to solver.exe as second argument")
     # download solver baron and get it's path to exe file
-    solvername = 'baron'
-    solverpath_exe = 'C:\\baron\\baron.exe'
-    solver = SolverFactory(solvername, executable=solverpath_exe)
-
-    # Problem definition - nonlinear multi-objective
-    # min obj1 = 2*(x^2) + y^2
-    # min obj2 = (x - 1)^2 + 2*(y - 1)^2
-    # s.t
-    # -2 <= x <= 4
-    # -2 <= y <= 4
-
-    model = ConcreteModel()
-    # create 2 vars for the problem
-    model.x = Var(domain=NonNegativeReals)
-    model.y = Var(domain=NonNegativeReals)
-    # create all constrains on vars
-    model.c1 = Constraint(expr=model.x <= 4)
-    model.c2 = Constraint(expr=model.x >= -2)
-    model.c3 = Constraint(expr=model.y <= 4)
-    model.c4 = Constraint(expr=model.y >= -2)
-    # define objective function expression
-    f1 = (2 * (model.x ** 2) + model.y ** 2)
-    f2 = (((model.x - 1) ** 2) + (2 * ((model.y - 1) ** 2)))
-
-    f_min, f_max = get_pareto_min_max_values(model, f1, f2, solver)
-    eps_param = epsilone_method(model, f1, f2, solver, f_min, f_max)
-    weighted_param = weighted_sum(model, f1, f2, solver)
-    plot(subplot1=eps_param, subplot2=weighted_param)
+    solvername = sys.argv[1]
+    solverpath_exe = sys.argv[2]
+    try:
+        solver = SolverFactory(solvername, executable=solverpath_exe)
+        model = ConcreteModel()
+        # create 2 vars for the problem
+        model.x = Var(domain=NonNegativeReals, bounds=(0, 10))
+        model.y = Var(domain=NonNegativeReals, bounds=(0, 20))
+        # expression to hold slant height
+        model.s = Expression(expr=sqrt((model.x**2) + (model.y**2)))  # s = sqrt(r^2 + h^2)
+        # create all constrains on vars
+        model.c = Constraint(expr=(pi/3)*(model.x**2)*model.y >= 200)
+        # define objective function expression
+        f1 = pi * model.x * (model.x + model.s)
+        f2 = pi * model.x * model.s
+        f_min, f_max = get_pareto_min_max_values(model, f1, f2, solver)
+        eps_param = epsilone_method(model, f1, f2, solver, f_min, f_max)
+        weighted_param = weighted_sum(model, f1, f2, solver)
+        plot(subplot1=eps_param, subplot2=weighted_param)
+    except:
+        quit("solver doesn't exist")
