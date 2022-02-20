@@ -32,9 +32,9 @@ r = base radius, h = height, s = slant height V = volume, B = base area, S = lat
 
 **Matematical problem modeling**
 
-- <img src="https://latex.codecogs.com/svg.image?min&space;(S)=\pi*r*s" title="min S=\pi*r*s" />
-- <img src="https://latex.codecogs.com/svg.image?min&space;(T)&space;=&space;B&space;&plus;&space;S&space;=&space;\pi*r*(r&plus;s)" title="min T = B + S = \pi*r*(r+s)" />
+- <img src="https://latex.codecogs.com/svg.image?\bg_white&space;min&space;(S)=\pi*r*s" title="min S=\pi*r*s" />
+- <img src="https://latex.codecogs.com/svg.image?\bg_white&space;min&space;(T)&space;=&space;B&space;&plus;&space;S&space;=&space;\pi*r*(r&plus;s)" title="min T = B + S = \pi*r*(r+s)" />
 such that:
-- <img src="https://latex.codecogs.com/svg.image?V\geq&space;200cm^3" title="V\geq 200cm^3" />
-- <img src="https://latex.codecogs.com/svg.image?r\in[0,10]cm,&space;h\in[0,20]cm" title="r\in[0,10]cm, h\in[0,20]cm" />
+- <img src="https://latex.codecogs.com/svg.image?\bg_white&space;V\geq&space;200cm^3" title="\bg_white V\geq 200cm^3" />
+- <img src="https://latex.codecogs.com/svg.image?\bg_white&space;r\in[0,10]cm,&space;h\in[0,20]cm" title="r\in[0,10]cm, h\in[0,20]cm" />
 <img src="https://www.varsitytutors.com/assets/vt-hotmath-legacy/hotmath_help/topics/volume-of-a-cone/cone1.gif" />
